@@ -60,7 +60,7 @@ public class ApiClient {
         for (val torrent : torrents) {
             val entry = (Map<String, String>) torrent;
             val torrentLink = new TorrentLink(
-                    getString(entry.get("quality")),
+                    Title.getQuality(getString(entry.get("quality"))),
                     getString(entry.get("url")),
                     getString(entry.get("size"))
             );

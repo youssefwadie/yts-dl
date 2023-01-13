@@ -15,7 +15,7 @@ public class UserInputHandler {
     }
 
 
-    public Title handleTitleSelection(final List<Title> titles) {
+    public Title handleTitleSelection(final List<Title> titles, boolean printDescription) {
         Objects.requireNonNull(titles, "titles must not be null");
         if (titles.isEmpty()) {
             throw new IllegalStateException("no titles found");
@@ -25,7 +25,11 @@ public class UserInputHandler {
         }
 
         for (int i = 0; i < titles.size(); i++) {
-            System.out.printf("%2d - %s%n", i + 1, titles.get(i).title());
+            val title = titles.get(i);
+            System.out.printf("%2d - %s%n", i + 1, title.title());
+            if (printDescription) {
+                System.out.println(title.description());
+            }
         }
 
         val titleNumber = getTitleNumber(titles.size());

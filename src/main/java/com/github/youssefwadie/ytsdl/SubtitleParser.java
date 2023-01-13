@@ -8,10 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,8 +48,31 @@ public class SubtitleParser {
         if (bestSubtitle.get() == null) {
             log.warn("{} not found", language.name());
         }
-        
+
         return bestSubtitle.get();
+    }
+
+    public Mono<String> getDownloadLink(Subtitle subtitle) {
+        if (subtitle == null) return Mono.error(() -> new UnableToParseException("subtitle not found"));
+        return httpClient
+                .get()
+                .uri(subtitle.downloadPageUrl())
+                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString())
+                .flatMap(response -> {
+                    val document = Jsoup.parse(response);
+                    val anchorElement = document.selectFirst("a.download-subtitle");
+                    if (anchorElement == null) {
+                        return Mono.error(() -> new UnableToParseException("unable to find the download link"));
+                    }
+                    try {
+                        val uri = new URI(subtitle.downloadPageUrl());
+                        String domainName = subtitle.downloadPageUrl().replace(uri.getPath(), "");
+                        return Mono.just(String.format("%s%s", domainName, anchorElement.attr("href")));
+                    } catch (URISyntaxException e) {
+                        return Mono.error(new UnableToParseException(e));
+                    }
+                });
+
     }
 
     private Mono<List<Subtitle>> getAvailableSubtitles(String titleUrl) {
@@ -78,7 +104,6 @@ public class SubtitleParser {
                         val subtitlePageUrl = td.get(td.size() - 3).selectFirst("a").attr("href");
                         subtitles.add(new Subtitle(lang, subtitlePageUrl, rating));
                     }
-                    ;
 
                     return subtitles;
                 });
