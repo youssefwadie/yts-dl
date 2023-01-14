@@ -1,7 +1,6 @@
 package com.github.youssefwadie.ytsdl.config;
 
-import com.github.youssefwadie.ytsdl.download.DownloadProperties;
-import com.github.youssefwadie.ytsdl.util.Assert;
+import com.github.youssefwadie.ytsdl.download.DownloadConfig;
 import lombok.val;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ public final class ConfigProcessor {
     private ConfigProcessor() {
     }
 
-    public static DownloadProperties readConfig() {
+    public static DownloadConfig readConfig() {
         val configFilePath = getConfigFilePath();
         return readConfig(configFilePath.toAbsolutePath());
     }
@@ -37,7 +36,7 @@ public final class ConfigProcessor {
         write(key, value, configFilePath);
     }
 
-    private static DownloadProperties readConfig(final Path configFilePath) {
+    private static DownloadConfig readConfig(final Path configFilePath) {
         if (!Files.exists(configFilePath)) {
             throw new ConfigParserException("Unable to find the config file: " + configFilePath.toAbsolutePath());
         }
@@ -49,7 +48,7 @@ public final class ConfigProcessor {
             val torrentDownloadCommand = properties.getProperty(TORRENT_DOWNLOAD_COMMAND_CONFIG_KEY);
             validateDownloadCommand(httpDownloadCommand, HTTP_DOWNLOAD_COMMAND_CONFIG_KEY);
             validateDownloadCommand(torrentDownloadCommand, TORRENT_DOWNLOAD_COMMAND_CONFIG_KEY);
-            return new DownloadProperties(
+            return new DownloadConfig(
                     httpDownloadCommand,
                     torrentDownloadCommand
             );

@@ -5,7 +5,7 @@ import com.github.youssefwadie.ytsdl.parsers.ApiClient;
 import com.github.youssefwadie.ytsdl.parsers.SubtitleParser;
 import com.github.youssefwadie.ytsdl.config.ConfigParserException;
 import com.github.youssefwadie.ytsdl.config.ConfigProcessor;
-import com.github.youssefwadie.ytsdl.download.DownloadProperties;
+import com.github.youssefwadie.ytsdl.download.DownloadConfig;
 import com.github.youssefwadie.ytsdl.download.DownloadService;
 import com.github.youssefwadie.ytsdl.model.DownloadBag;
 import com.github.youssefwadie.ytsdl.model.Languages;
@@ -79,7 +79,7 @@ public class CommandLineRunner implements Runnable {
     }
 
 
-    private Integer processedDownloading(DownloadProperties downloadProps, DownloadBag downloadBag) throws IOException {
+    private Integer processedDownloading(DownloadConfig downloadProps, DownloadBag downloadBag) throws IOException {
         boolean proceedDownloading = userInputHandler.downloadPrompt();
         if (proceedDownloading) {
             download(downloadBag, downloadProps);
@@ -93,15 +93,14 @@ public class CommandLineRunner implements Runnable {
         return 0;
     }
 
-    private void download(DownloadBag bag, DownloadProperties downloadProps) throws IOException {
+    private void download(DownloadBag bag, DownloadConfig downloadProps) throws IOException {
         downloadService.startTorrentDownload(bag.getMagnetLink(), downloadProps);
         if (Objects.nonNull(bag.getHttpLink())) {
             downloadService.startHttpDownload(bag.getHttpLink(), downloadProps);
         }
     }
 
-    @Command(name = "search", aliases = "s")
-
+    @Command(name = "search", aliases = "s", description = "non interactive mode")
     private class NonInteractiveDownloadAndSearchSubCommand implements Callable<Integer> {
         @Parameters(arity = "1..", description = "search for a movie", paramLabel = "query")
         private List<String> query;
@@ -169,7 +168,7 @@ public class CommandLineRunner implements Runnable {
         }
     }
 
-    @Command(name = "interactive", aliases = "i", description = "Full interactive mode")
+    @Command(name = "interactive", aliases = "i", description = "fully interactive mode")
     private class InteractiveSubCommand implements Callable<Integer> {
 
         @Option(names = {"-h", "--help"}, usageHelp = true,
@@ -220,7 +219,7 @@ public class CommandLineRunner implements Runnable {
         }
     }
 
-    @Command(name = "config", aliases = "conf")
+    @Command(name = "config", aliases = "conf", description = "manipulating the configuration file")
     private class ConfigSubCommand implements Callable<Integer> {
         @Option(arity = "1..",
                 names = "-http", description = "http download command, syntax <command> %%s, %%s will be replaced with the actual download link",
@@ -232,6 +231,9 @@ public class CommandLineRunner implements Runnable {
                 paramLabel = "command")
         private List<String> torrentDownloadCommand;
 
+        @Option(arity = "0", names = {"-p", "--print"}, description = "Print the current configuration")
+        private boolean printConfiguration = false;
+
         @Option(names = {"-h", "--help"}, usageHelp = true,
                 description = "print this help and exit", defaultValue = "false")
         private boolean usageHelpRequested;
@@ -241,17 +243,25 @@ public class CommandLineRunner implements Runnable {
         public Integer call() throws Exception {
             if (usageHelpRequested) {
                 printUsage(this);
+                return 0;
             }
+            if (printConfiguration) {
+                printCurrentConfiguration();
+                return 0;
+            }
+
             if (httpDownloadCommand != null)
                 ConfigProcessor.write(HTTP_DOWNLOAD_COMMAND_CONFIG_KEY, String.join(" ", httpDownloadCommand));
 
             if (torrentDownloadCommand != null)
                 ConfigProcessor.write(TORRENT_DOWNLOAD_COMMAND_CONFIG_KEY, String.join(" ", torrentDownloadCommand));
-
-            val savedProperties = readConfig();
-            System.out.println(savedProperties);
             return 0;
         }
     }
 
+    private void printCurrentConfiguration() {
+        val currentConfig = readConfig();
+        System.out.printf("Http Download Command: %s%n", currentConfig.httpDownloadCommand());
+        System.out.printf("Torrent Download Command: %s%n", currentConfig.torrentDownloadCommand());
+    }
 }

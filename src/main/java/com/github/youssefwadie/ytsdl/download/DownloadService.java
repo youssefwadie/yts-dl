@@ -16,7 +16,7 @@ public class DownloadService {
      * @throws IllegalArgumentException if {@literal httpLink}  or {@literal properties} is null.
      * @throws IOException              if an I/O error occurs
      */
-    public Process startHttpDownload(String httpLink, DownloadProperties properties) throws IOException {
+    public Process startHttpDownload(String httpLink, DownloadConfig properties) throws IOException {
         nonNull(httpLink, "httpLink must not be null.");
         nonNull(properties, "properties must not be null");
         val fullCommand = fullCommand(properties.httpDownloadCommand(), httpLink);
@@ -34,7 +34,7 @@ public class DownloadService {
      * @throws IllegalArgumentException if {@literal magnetLink}  or {@literal properties} is null.
      * @throws IOException              if an I/O error occurs
      */
-    public Process startTorrentDownload(String magnetLink, DownloadProperties properties) throws IOException {
+    public Process startTorrentDownload(String magnetLink, DownloadConfig properties) throws IOException {
         nonNull(magnetLink, "magnetLink must not be null.");
         nonNull(properties, "properties must not be null");
         String[] fullCommand = fullCommand(properties.torrentDownloadCommand(), magnetLink);
