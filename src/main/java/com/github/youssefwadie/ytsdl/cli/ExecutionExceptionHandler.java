@@ -11,7 +11,7 @@ public class ExecutionExceptionHandler implements CommandLine.IExecutionExceptio
         if ("DEBUG".equalsIgnoreCase(System.getProperty("picocli.trace"))) {
             err.println(cmd.getColorScheme().stackTraceText(ex));
         }
-        err.println(cmd.getColorScheme().errorText(ex.getMessage())); // bold red
         return 1;
     }
+
 }

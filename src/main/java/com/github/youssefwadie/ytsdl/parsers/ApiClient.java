@@ -1,4 +1,4 @@
-package com.github.youssefwadie.ytsdl;
+package com.github.youssefwadie.ytsdl.parsers;
 
 import com.github.youssefwadie.ytsdl.model.Title;
 import com.github.youssefwadie.ytsdl.model.TorrentLink;
@@ -20,19 +20,20 @@ import static com.github.youssefwadie.ytsdl.util.ParserUtil.getString;
 @RequiredArgsConstructor
 public class ApiClient {
     private final static String API_BASE_URL = "https://yts.mx/api/v2";
-    private final static String API_SEARCH_URL = API_BASE_URL + "/list_movies.json";
+    private final static String LIST_API_URL = API_BASE_URL + "/list_movies.json";
 
     private final HttpClient client;
 
 
     public Mono<List<Title>> search(String searchTerm) {
-        val queryString = new QueryStringEncoder(API_SEARCH_URL);
+        val queryString = new QueryStringEncoder(LIST_API_URL);
         queryString.addParam("query_term", searchTerm);
         return client.get()
                 .uri(queryString.toString())
                 .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString())
                 .map(this::mapJsonToTitlesList)
-                .doOnError(ReactiveUtil::handleError);
+                .doOnError(ReactiveUtil::handleError)
+                ;
 
     }
 

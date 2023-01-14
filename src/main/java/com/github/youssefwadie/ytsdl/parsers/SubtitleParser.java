@@ -1,4 +1,4 @@
-package com.github.youssefwadie.ytsdl;
+package com.github.youssefwadie.ytsdl.parsers;
 
 import com.github.youssefwadie.ytsdl.exceptions.UnableToParseException;
 import com.github.youssefwadie.ytsdl.model.Language;
@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
@@ -24,6 +23,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 public class SubtitleParser {
     private final HttpClient httpClient;
+
+    public List<Subtitle> findAllForTitle(String titleUrl) {
+        return getAvailableSubtitles(titleUrl).block();
+    }
 
     public Subtitle getSubtitle(String titleUrl, Language language) {
         Objects.requireNonNull(titleUrl, "titleUrl must not be null.");

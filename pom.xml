@@ -12,10 +12,11 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
+        <org.apache.maven-jar-plugin>3.3.0</org.apache.maven-jar-plugin>
+        <org.apache.maven-assembly-plugin>3.4.2</org.apache.maven-assembly-plugin>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <io.projectreactor.bom.version>2022.0.1</io.projectreactor.bom.version>
-        <org.junit.jupiter.version>5.9.1</org.junit.jupiter.version>
+        <org.junit.jupiter.version>5.9.2</org.junit.jupiter.version>
         <org.projectlombok.version>1.18.24</org.projectlombok.version>
         <com.jayway.jsonpath.version>2.7.0</com.jayway.jsonpath.version>
         <info.picocli.version>4.7.0</info.picocli.version>
@@ -68,7 +69,6 @@
         </dependency>
 
 
-
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -110,13 +110,44 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${org.apache.maven-assembly-plugin}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        com.github.youssefwadie.ytsdl.cli.CLI
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                            <finalName>${project.name}-V${project.version}</finalName>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${org.apache.maven-jar-plugin}</version>
                 <configuration>
-                    <release>${maven.compiler.target}</release>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 </project>

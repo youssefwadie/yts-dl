@@ -3,8 +3,6 @@ package com.github.youssefwadie.ytsdl.download;
 import lombok.val;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import static com.github.youssefwadie.ytsdl.util.Assert.nonNull;
 
