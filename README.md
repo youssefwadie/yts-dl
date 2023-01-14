@@ -26,7 +26,7 @@ java -jar target/yts-dl-V1.0.jar -h
 | Mode            | Interactive Movie Search | Interactive Subtitle Search | Interactive Download |
 |-----------------|--------------------------|-----------------------------|----------------------|
 | Interactive     | :heavy_check_mark:       | :heavy_check_mark:          | :heavy_check_mark:   |
-| Non-Interactive | :heavy_check_mark:       | :heavy_multiplication_x:    | :heavy_check_mark:   |
+| Non-Interactive | :heavy_check_mark:       | :heavy_multiplication_x:    | :heavy_multiplication_x:   |
 
 ---
 
