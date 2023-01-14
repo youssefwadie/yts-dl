@@ -113,7 +113,7 @@ public class CommandLineRunner implements Runnable {
         }
     }
 
-    @Command(name = "search", aliases = "s", description = "non-interactive mode")
+    @Command(name = "non-interactive", aliases = "n", description = "non-interactive mode")
     private class NonInteractiveDownloadAndSearchSubCommand implements Callable<Integer> {
         @Parameters(arity = "1..", description = "search for a movie", paramLabel = "query")
         private List<String> query;
