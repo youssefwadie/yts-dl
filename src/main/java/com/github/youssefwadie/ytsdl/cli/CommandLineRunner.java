@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
+import static com.github.youssefwadie.ytsdl.cli.ConsoleUtils.*;
 import static com.github.youssefwadie.ytsdl.config.ConfigConstants.HTTP_DOWNLOAD_COMMAND_CONFIG_KEY;
 import static com.github.youssefwadie.ytsdl.config.ConfigConstants.TORRENT_DOWNLOAD_COMMAND_CONFIG_KEY;
 import static com.github.youssefwadie.ytsdl.config.ConfigProcessor.readConfig;
@@ -51,6 +52,7 @@ public class CommandLineRunner implements Runnable {
     private final UserInputHandler userInputHandler;
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
+
     public CommandLineRunner(final ApiClient apiClient, final SubtitleParser subtitleParser, final DownloadService downloadService) {
         this.apiClient = apiClient;
         this.subtitleParser = subtitleParser;
@@ -82,20 +84,6 @@ public class CommandLineRunner implements Runnable {
     }
 
 
-    private Integer processedDownloading(DownloadConfig downloadProps, DownloadBag downloadBag) throws IOException {
-        boolean proceedDownloading = userInputHandler.downloadPrompt();
-        if (proceedDownloading) {
-            download(downloadBag, downloadProps);
-        } else {
-            System.out.printf("Magnet Link: %s%n", downloadBag.getMagnetLink());
-            if (Objects.nonNull(downloadBag.getHttpLink())) {
-                System.out.printf("Subtitle download link: %s%n", downloadBag.getHttpLink());
-            }
-        }
-
-        return 0;
-    }
-
     private void download(DownloadBag bag, DownloadConfig downloadProps) throws IOException {
         downloadService.startTorrentDownload(bag.getMagnetLink(), downloadProps);
         if (Objects.nonNull(bag.getHttpLink())) {
@@ -103,7 +91,29 @@ public class CommandLineRunner implements Runnable {
         }
     }
 
-    @Command(name = "search", aliases = "s", description = "non interactive mode")
+
+    private void proceedDownloading(DownloadBag downloadBag, boolean proceedDownloading) throws IOException {
+        if (proceedDownloading) {
+            try {
+                val downloadProps = readConfig();
+                download(downloadBag, downloadProps);
+            } catch (ConfigParserException ex) {
+                printDownloadBag(downloadBag);
+                throw ex;
+            }
+        } else {
+            printDownloadBag(downloadBag);
+        }
+    }
+
+    private void printDownloadBag(DownloadBag downloadBag) {
+        printPurple(String.format("Magnet Link: %s%n", downloadBag.getMagnetLink()));
+        if (Objects.nonNull(downloadBag.getHttpLink())) {
+            printPurple(String.format("Subtitle download link: %s%n", downloadBag.getHttpLink()));
+        }
+    }
+
+    @Command(name = "search", aliases = "s", description = "non-interactive mode")
     private class NonInteractiveDownloadAndSearchSubCommand implements Callable<Integer> {
         @Parameters(arity = "1..", description = "search for a movie", paramLabel = "query")
         private List<String> query;
@@ -133,8 +143,6 @@ public class CommandLineRunner implements Runnable {
             }
 
             try {
-                val downloadProps = readConfig();
-
                 val titlesMono = apiClient.search(String.join(" ", query));
                 val titles = titlesMono.block();
 
@@ -154,14 +162,9 @@ public class CommandLineRunner implements Runnable {
                     val downloadLink = subtitleParser.getDownloadLink(subtitle).block();
                     downloadBag.setHttpLink(downloadLink);
                 }
-                if (proceedDownloading) {
-                    download(downloadBag, downloadProps);
-                } else {
-                    System.out.printf("Magnet Link: %s%n", downloadBag.getMagnetLink());
-                    if (Objects.nonNull(downloadBag.getHttpLink())) {
-                        System.out.printf("Subtitle download link: %s%n", downloadBag.getHttpLink());
-                    }
-                }
+
+                proceedDownloading(downloadBag, userInputHandler.downloadPrompt());
+
                 return 0;
             } catch (ConfigParserException ex) {
                 System.out.println("corrupted configuration");
@@ -171,7 +174,7 @@ public class CommandLineRunner implements Runnable {
         }
     }
 
-    @Command(name = "interactive", aliases = "i", description = "fully interactive mode")
+    @Command(name = "interactive", aliases = "i", description = "interactive mode")
     private class InteractiveSubCommand implements Callable<Integer> {
 
         @Option(names = {"-h", "--help"}, usageHelp = true,
@@ -186,7 +189,6 @@ public class CommandLineRunner implements Runnable {
             }
 
             try {
-                val downloadProps = readConfig();
                 String query = userInputHandler.handleQuery();
                 val titlesMono = apiClient.search(query);
 
@@ -212,8 +214,8 @@ public class CommandLineRunner implements Runnable {
                     }
                 }
 
-
-                return processedDownloading(downloadProps, downloadBag);
+                proceedDownloading(downloadBag, userInputHandler.downloadPrompt());
+                return 0;
             } catch (ConfigParserException ex) {
                 System.out.println("corrupted configuration");
                 printUsage(configCommand);
@@ -264,7 +266,7 @@ public class CommandLineRunner implements Runnable {
 
     private void printCurrentConfiguration() {
         val currentConfig = readConfig();
-        System.out.printf("Http Download Command: %s%n", currentConfig.httpDownloadCommand());
-        System.out.printf("Torrent Download Command: %s%n", currentConfig.torrentDownloadCommand());
+        printGreen(String.format("Http Download Command: %s%n", currentConfig.httpDownloadCommand()));
+        printGreen(String.format("Torrent Download Command: %s%n", currentConfig.torrentDownloadCommand()));
     }
 }

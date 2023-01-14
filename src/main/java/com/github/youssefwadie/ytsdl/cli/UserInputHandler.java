@@ -8,8 +8,9 @@ import lombok.val;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Scanner;
+
+import static com.github.youssefwadie.ytsdl.cli.ConsoleUtils.*;
 
 public class UserInputHandler {
     private final Scanner scanner;
@@ -27,13 +28,10 @@ public class UserInputHandler {
         if (titles.size() == 1) {
             return Optional.of(titles.get(0));
         }
-
-        for (int i = 0; i < titles.size(); i++) {
-            val title = titles.get(i);
-            System.out.printf("%2d - %s%n", i + 1, title.title());
-            if (printDescription) {
-                System.out.println(title.description());
-            }
+        if (printDescription) {
+            ConsoleUtils.printList(titles, title -> String.format("%s%n%s", title.title(), title.description()));
+        } else {
+            ConsoleUtils.printList(titles, title -> String.format("%s", title.title()));
         }
 
         val titleNumber = getChoiceNumber(titles.size());
@@ -44,64 +42,73 @@ public class UserInputHandler {
     }
 
     public boolean downloadPrompt() {
-        System.out.print("Proceed in downloading (y/N) ");
-        return handleYesOrNo();
+        return handleYesOrNo("Proceed in downloading");
     }
 
     private int getChoiceNumber(int end) {
+        printYellow("-1 to exit\n");
         while (true) {
-            System.out.printf("1 - %d > ", end);
-            val readLine = scanner.nextLine();
+            printCyan(String.format("1 - %d > ", end));
+            val readLine = scanner.nextLine().trim();
+            if (readLine.isBlank()) {
+                continue;
+            }
             try {
                 val num = Integer.parseInt(readLine);
+                if (num == -1) {
+                    return -1;
+                }
                 if (num < 1 || num > end) {
-                    System.err.println("out of range");
+                    printError("out of range");
                 } else {
                     return num;
                 }
             } catch (NumberFormatException ex) {
-                System.err.printf("invalid input expected integer found %s.%n", readLine);
+                printError(String.format("invalid input expected integer found %s.%n", readLine));
             }
         }
     }
 
     public String handleQuery() {
-        System.out.println("Search Title");
-        System.out.print("> ");
-        return scanner.nextLine();
+        printPrompt("Search Title");
+        String query = scanner.nextLine().trim();
+        while (query.isBlank()) {
+            printPrompt();
+            query = scanner.nextLine().trim();
+        }
+        return query;
     }
 
     public boolean handlePrintingDescription() {
-        System.out.print("Print description (y/N) ");
-        return handleYesOrNo();
+        return handleYesOrNo("Print Description");
     }
 
-    private boolean handleYesOrNo() {
+    private boolean handleYesOrNo(String message) {
+        printBlue(String.format("%s (y/N) ", message));
         val ans = scanner.nextLine().toLowerCase();
         return ans.equals("y") || ans.equals("yes");
     }
 
     public Title.Quality handleTitleQuality(Title title) {
         val qualities = title.torrentLinks().stream().map(TorrentLink::quality).toList();
-        System.out.println("Choose Quality " + qualities);
+        printPrompt("Choose Quality " + qualities);
         String ans;
         Title.Quality quality;
 
         do {
-            System.out.print("> ");
             ans = scanner.nextLine();
             quality = Title.getQuality(ans);
             if (Objects.isNull(quality)) {
-                System.out.println("Invalid choice");
+                printError("Invalid choice");
             } else {
                 return quality;
             }
+            printPrompt();
         } while (true);
     }
 
     public boolean handleGettingSubtitle() {
-        System.out.print("Download a subtitle (y/N) ");
-        return handleYesOrNo();
+        return handleYesOrNo("Subtitle ?");
     }
 
     public Optional<Subtitle> handleSubtitleSelection(List<Subtitle> subtitles) {
@@ -114,10 +121,7 @@ public class UserInputHandler {
             return Optional.of(subtitles.get(0));
         }
 
-        for (int i = 0; i < subtitles.size(); i++) {
-            val subtitle = subtitles.get(i);
-            System.out.printf("%2d - %s%n", i + 1, subtitle.lang());
-        }
+        printList(subtitles, subtitle -> String.format("%s [%d*]", subtitle.lang(), subtitle.stars()));
 
         val subtitleNumber = getChoiceNumber(subtitles.size());
         if (subtitleNumber == -1) {

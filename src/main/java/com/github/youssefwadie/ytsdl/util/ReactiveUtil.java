@@ -5,17 +5,19 @@ import lombok.val;
 
 import java.net.UnknownHostException;
 
+import static com.github.youssefwadie.ytsdl.cli.ConsoleUtils.printError;
+
 public final class ReactiveUtil {
     private ReactiveUtil() {
     }
 
     public static void handleError(Throwable throwable) {
         if (throwable instanceof PathNotFoundException) {
-            System.err.println("No results found");
+            printError("No results found");
         } else if (throwable instanceof UnknownHostException) {
-            System.err.println("[ERROR] Check your internet connection");
+            printError("[ERROR] Check your internet connection");
         } else {
-            System.err.println("[ERROR] " + throwable.getMessage());
+            printError("[ERROR] " + throwable.getMessage());
         }
     }
 
