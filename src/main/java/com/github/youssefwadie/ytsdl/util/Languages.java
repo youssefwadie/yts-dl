@@ -1,9 +1,12 @@
-package com.github.youssefwadie.ytsdl.model;
+package com.github.youssefwadie.ytsdl.util;
 
+import com.github.youssefwadie.ytsdl.model.Language;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,7 +91,7 @@ public final class Languages {
         AVAILABLE_LANGUAGES.clear();
         addLang("English", "eng");
         addLang("Arabic", "ara");
-        log.warn("falling back to the default languages: {}", AVAILABLE_LANGUAGES.stream().map(Language::name).toList());
+        log.info("falling back to the default languages: {}", AVAILABLE_LANGUAGES.stream().map(Language::name).toList());
     }
 
     public static Language getLanguage(String nameOrAlias) {

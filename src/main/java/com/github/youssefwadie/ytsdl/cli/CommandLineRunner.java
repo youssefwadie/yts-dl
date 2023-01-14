@@ -8,10 +8,11 @@ import com.github.youssefwadie.ytsdl.config.ConfigProcessor;
 import com.github.youssefwadie.ytsdl.download.DownloadConfig;
 import com.github.youssefwadie.ytsdl.download.DownloadService;
 import com.github.youssefwadie.ytsdl.model.DownloadBag;
-import com.github.youssefwadie.ytsdl.model.Languages;
+import com.github.youssefwadie.ytsdl.util.Languages;
 import com.github.youssefwadie.ytsdl.model.Title;
 import com.github.youssefwadie.ytsdl.model.TorrentLink;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.val;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -64,11 +65,12 @@ public class CommandLineRunner implements Runnable {
     }
 
     @Override
+    @SneakyThrows
     public void run() {
         if (usageHelpRequested) {
             printUsage(this);
         } else {
-            throw new CommandLine.ParameterException(spec.commandLine(), "Missing required subcommand");
+            this.interactiveSubCommand.call();
         }
     }
 
