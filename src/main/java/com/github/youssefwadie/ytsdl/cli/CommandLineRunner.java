@@ -49,7 +49,8 @@ public class CommandLineRunner implements Runnable {
     private final InteractiveSubCommand interactiveSubCommand;
 
     private final UserInputHandler userInputHandler;
-
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
     public CommandLineRunner(final ApiClient apiClient, final SubtitleParser subtitleParser, final DownloadService downloadService) {
         this.apiClient = apiClient;
         this.subtitleParser = subtitleParser;
@@ -64,6 +65,8 @@ public class CommandLineRunner implements Runnable {
     public void run() {
         if (usageHelpRequested) {
             printUsage(this);
+        } else {
+            throw new CommandLine.ParameterException(spec.commandLine(), "Missing required subcommand");
         }
     }
 
