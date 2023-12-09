@@ -5,13 +5,12 @@ import com.github.youssefwadie.ytsdl.parsers.SubtitleParser;
 import com.github.youssefwadie.ytsdl.download.DownloadService;
 import lombok.val;
 import picocli.CommandLine;
-import reactor.netty.http.client.HttpClient;
+
+import java.net.http.HttpClient;
 
 public class CLI {
     public static void main(String[] args) {
-
-        val httpClient = HttpClient.create();
-
+        HttpClient httpClient = HttpClient.newHttpClient();
         val apiClient = new ApiClient(httpClient);
         val subtitleParser = new SubtitleParser(httpClient);
         val downloadService = new DownloadService();
@@ -25,7 +24,7 @@ public class CLI {
         cmd.setParameterExceptionHandler(new ParameterMessageHandler());
         int exitCode = cmd.execute(args);
         if (exitCode != 0) {
-            System.exit(1);
+            System.exit(exitCode);
         }
 
     }

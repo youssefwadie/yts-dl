@@ -2,16 +2,18 @@ package com.github.youssefwadie.ytsdl.parsers;
 
 import com.github.youssefwadie.ytsdl.model.Title;
 import com.github.youssefwadie.ytsdl.model.TorrentLink;
-import com.github.youssefwadie.ytsdl.util.ReactiveUtil;
+import com.github.youssefwadie.ytsdl.util.CollectionUtils;
 import com.jayway.jsonpath.JsonPath;
-import io.netty.handler.codec.http.QueryStringEncoder;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import net.minidev.json.JSONArray;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
 
-import java.util.ArrayList;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -22,19 +24,18 @@ public class ApiClient {
     private final static String API_BASE_URL = "https://yts.mx/api/v2";
     private final static String LIST_API_URL = API_BASE_URL + "/list_movies.json";
 
-    private final HttpClient client;
+    private final HttpClient httpClient;
 
+    @SneakyThrows
+    public List<Title> search(String searchTerm) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(LIST_API_URL + "?query_term=" + searchTerm))
+                .header("Accept", "application/json")
+                .build();
 
-    public Mono<List<Title>> search(String searchTerm) {
-        val queryString = new QueryStringEncoder(LIST_API_URL);
-        queryString.addParam("query_term", searchTerm);
-        return client.get()
-                .uri(queryString.toString())
-                .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono.asString())
-                .map(this::mapJsonToTitlesList)
-                .doOnError(ReactiveUtil::handleError)
-                ;
-
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        String body = response.body();
+        return mapJsonToTitlesList(body);
     }
 
 
@@ -42,32 +43,38 @@ public class ApiClient {
     private List<Title> mapJsonToTitlesList(String json) {
         val context = JsonPath.parse(json);
         final JSONArray movies = context.read("$.data.movies");
-        val titles = new ArrayList<Title>();
 
-        for (val movie : movies) {
-            val entry = (Map<String, Object>) movie;
-            val title = getString(entry.get("title_long"));
-            val description = getString(entry.get("summary"));
-            val url = getString(entry.get("url"));
-            val torrents = parseTorrentLinks((JSONArray) entry.get("torrents"));
-            titles.add(new Title(title, description, url, torrents));
+        if (CollectionUtils.isEmpty(movies)) {
+            return Collections.emptyList();
         }
-        return titles;
+
+        return movies.stream()
+                .map(movie -> (Map<String, Object>) movie)
+                .map(entry -> {
+                    val title = getString(entry.get("title_long"));
+                    val description = getString(entry.get("summary"));
+                    val url = getString(entry.get("url"));
+                    val torrents = parseTorrentLinks((JSONArray) entry.get("torrents"));
+                    return new Title(title, description, url, torrents);
+                })
+                .toList();
+
     }
 
     @SuppressWarnings("unchecked")
     private List<TorrentLink> parseTorrentLinks(JSONArray torrents) {
-        val torrentLinks = new ArrayList<TorrentLink>();
-        for (val torrent : torrents) {
-            val entry = (Map<String, String>) torrent;
-            val torrentLink = new TorrentLink(
-                    Title.getQuality(getString(entry.get("quality"))),
-                    getString(entry.get("url")),
-                    getString(entry.get("size"))
-            );
-            torrentLinks.add(torrentLink);
+        if (CollectionUtils.isEmpty(torrents)) {
+            return Collections.emptyList();
         }
-        return torrentLinks;
+
+        return torrents.stream()
+                .map(torrent -> (Map<String, String>) torrent)
+                .map(entry -> new TorrentLink(
+                        Title.getQuality(getString(entry.get("quality"))),
+                        getString(entry.get("url")),
+                        getString(entry.get("size"))
+                ))
+                .toList();
     }
 
 }

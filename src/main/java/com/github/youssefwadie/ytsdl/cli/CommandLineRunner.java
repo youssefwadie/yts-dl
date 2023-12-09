@@ -109,7 +109,7 @@ public class CommandLineRunner implements Runnable {
     }
 
     private void printDownloadBag(DownloadBag downloadBag) {
-        printPurple(String.format("Magnet Link: %s%n", downloadBag.getMagnetLink()));
+        printPurple(String.format("Torrent File Link: %s%n", downloadBag.getMagnetLink()));
         if (Objects.nonNull(downloadBag.getHttpLink())) {
             printPurple(String.format("Subtitle download link: %s%n", downloadBag.getHttpLink()));
         }
@@ -145,8 +145,7 @@ public class CommandLineRunner implements Runnable {
             }
 
             try {
-                val titlesMono = apiClient.search(String.join(" ", query));
-                val titles = titlesMono.block();
+                val titles = apiClient.search(String.join(" ", query));
 
                 val titleOptional = userInputHandler.handleTitleSelection(titles, printDescription);
                 if (titleOptional.isEmpty()) {
@@ -161,7 +160,7 @@ public class CommandLineRunner implements Runnable {
                 if (subtitleLang != null) {
                     val lang = Languages.getLanguage(subtitleLang);
                     val subtitle = subtitleParser.getSubtitle(title.url(), lang);
-                    val downloadLink = subtitleParser.getDownloadLink(subtitle).block();
+                    val downloadLink = subtitleParser.getDownloadLink(subtitle);
                     downloadBag.setHttpLink(downloadLink);
                 }
 
@@ -192,9 +191,7 @@ public class CommandLineRunner implements Runnable {
 
             try {
                 String query = userInputHandler.handleQuery();
-                val titlesMono = apiClient.search(query);
-
-                val titles = titlesMono.block();
+                val titles = apiClient.search(query);
                 val printDescription = userInputHandler.handlePrintingDescription();
                 val optionalTitle = userInputHandler.handleTitleSelection(titles, printDescription);
                 if (optionalTitle.isEmpty()) {
@@ -211,7 +208,7 @@ public class CommandLineRunner implements Runnable {
                     val subtitles = subtitleParser.findAllForTitle(title.url());
                     val chosenSubtitle = userInputHandler.handleSubtitleSelection(subtitles);
                     if (chosenSubtitle.isPresent()) {
-                        String downloadLink = subtitleParser.getDownloadLink(chosenSubtitle.get()).block();
+                        String downloadLink = subtitleParser.getDownloadLink(chosenSubtitle.get());
                         downloadBag.setHttpLink(downloadLink);
                     }
                 }

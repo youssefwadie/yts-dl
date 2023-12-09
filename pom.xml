@@ -8,35 +8,21 @@
     <artifactId>yts-dl</artifactId>
     <version>1.0</version>
 
-
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <org.apache.maven-jar-plugin>3.3.0</org.apache.maven-jar-plugin>
-        <org.apache.maven-assembly-plugin>3.4.2</org.apache.maven-assembly-plugin>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <io.projectreactor.bom.version>2022.0.1</io.projectreactor.bom.version>
-        <org.junit.jupiter.version>5.9.2</org.junit.jupiter.version>
-        <org.projectlombok.version>1.18.24</org.projectlombok.version>
-        <com.jayway.jsonpath.version>2.7.0</com.jayway.jsonpath.version>
-        <info.picocli.version>4.7.0</info.picocli.version>
-        <org.jsoup.version>1.15.3</org.jsoup.version>
+        <org.apache.maven-jar-plugin>3.3.0</org.apache.maven-jar-plugin>
+        <org.apache.maven-assembly-plugin>3.6.0</org.apache.maven-assembly-plugin>
+        <org.junit.jupiter.version>5.10.1</org.junit.jupiter.version>
+        <org.projectlombok.version>1.18.30</org.projectlombok.version>
+        <com.jayway.jsonpath.version>2.8.0</com.jayway.jsonpath.version>
+        <info.picocli.version>4.7.5</info.picocli.version>
+        <org.jsoup.version>1.17.1</org.jsoup.version>
         <org.slf4j.version>2.0.6</org.slf4j.version>
     </properties>
 
     <dependencies>
-
-        <!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty -->
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty</artifactId>
-        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
         <dependency>
@@ -45,13 +31,19 @@
             <version>${org.slf4j.version}</version>
         </dependency>
 
-
+        <!-- WATCH OUT when updating the json-path version, update json-smart manually -->
         <!-- https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path -->
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <version>${com.jayway.jsonpath.version}</version>
         </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.4.10</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>
@@ -78,13 +70,6 @@
         </dependency>
 
 
-        <!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-test -->
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -94,18 +79,6 @@
         </dependency>
 
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-bom -->
-            <dependency>
-                <groupId>io.projectreactor</groupId>
-                <artifactId>reactor-bom</artifactId>
-                <version>${io.projectreactor.bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <build>
         <plugins>
             <plugin>
